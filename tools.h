@@ -5,41 +5,12 @@
 #include <limits>
 #include <vector>
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace rom {
-//todo: make one template function out of 4 overloadet getbit()
-//std::numeric_limits<T>::digits  will tell us how many bits out uinteger has
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-inline uint8_t getbit(uint64_t in, uint8_t nthbit) {//get the value of the nth bit out of one uint64_t
-if (nthbit>=64) {return 0;}
-uint64_t mask{uint64_t(1) << nthbit};
-return (mask & in)?1:0;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-inline uint8_t getbit(uint32_t in, uint8_t nthbit) {//get the value of the nth bit out of one uint64_t
-if (nthbit>=32) {return 0;}
-uint32_t mask{uint32_t(1) << nthbit};
-return (mask&in)?1:0;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-inline uint8_t getbit(uint8_t in, uint8_t nthbit) {//get the value of the nth bit out of one uint8_t
-if (nthbit>=8) {return 0;}
-uint8_t mask(uint8_t{1} << nthbit);
-return (mask&in)?1:0;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-inline uint8_t getbyte(uint32_t in, uint8_t nthbyte) {//get the value of the nth bit out of one uint64_t
-if (nthbyte>=4) {return 0;}
-uint32_t mask{uint32_t(255) << (nthbyte*8)};
-return uint8_t((mask&in) >> (nthbyte*8));
-}
 
 //this function will tell us if a given literal type is able to hold negative values
 template <class typ>
-bool is_signed(void) {
+constexpr bool is_signed(void) {
 return (std::numeric_limits<typ>::lowest() < typ{});
 }
 
@@ -47,15 +18,29 @@ return (std::numeric_limits<typ>::lowest() < typ{});
 //unqualified int will always be signed int, but char is not exactly defined by the c++ standard
 bool char_is_signed(void){return is_signed<char>();}
 
-}//namespace rom
-
-//print any std::array<uint8_t,size> in hexadezimal to std::ostream;
-//use this for results from hash functions
-template <size_t array_sz>
-std::ostream& operator << (std::ostream& os,const  std::array<uint8_t,array_sz>& v) {
-for (auto a:v) {os << std::hex << std::setw(2) << std::setfill('0') << uint32_t(a);}
-return os;
+//get the value of one bit out of any unsigned integer
+template <class uint>  //should be a unsigned integer type
+uint8_t getbit(uint in,uint16_t nthbit) {
+static_assert(std::is_integral<uint>::value, "getbit must be instatiated with an INTEGER type");
+static_assert(is_signed<uint>()==0, "getbit can only operate in UNSIGNED integers");
+uint16_t bit_size{std::numeric_limits<uint>::digits}; //will tell us how many bits out uinteger has
+if (nthbit>=bit_size) {return 0;}
+uint mask(uint(1) << uint16_t(nthbit));
+return (mask & in)?1:0;
 }
+
+//get the value of the nth bit out of one uint64_t
+inline uint8_t getbyte(uint32_t in, uint8_t nthbyte) {
+if (nthbyte>=4) {return 0;}
+uint32_t mask{uint32_t(255) << (nthbyte*8)};
+return uint8_t((mask&in) >> (nthbyte*8));
+}
+
+}//namespace rom
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace debug {	//functions for debugging purpose
 
 //get an binary string from any container
 template <class cont> 				//any container of bool with begin() and end()
@@ -81,6 +66,17 @@ while(value != 0){
         }
 for(uint32_t i{1};i<=hex.length();++i)  {endian_fix += hex[hex.length() - i];}
 return endian_fix;
+}
+
+}//namespace debug
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//print any std::array<uint8_t,size> in hexadezimal to std::ostream;
+//use this for printing results from hash functions
+template <size_t array_sz>
+std::ostream& operator << (std::ostream& os,const  std::array<uint8_t,array_sz>& v) {
+for (auto a:v) {os << std::hex << std::setw(2) << std::setfill('0') << uint32_t(a);}
+return os;
 }
 
 
