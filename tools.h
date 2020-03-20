@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <limits>
 #include <vector>
+#include <sstream>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace rom {
@@ -12,6 +13,11 @@ namespace rom {
 template <class typ>
 constexpr bool is_signed(void) {
 return (std::numeric_limits<typ>::lowest() < typ{});
+}
+
+void assert_plain_char_is_unsigned(void) {
+static_assert(is_signed<std::string::value_type>()==false,"You cannot use this software because your system iplements plain char as signed char.");
+static_assert(is_signed<char>()==false,			"You cannot use this software because your system iplements plain char as signed char.");
 }
 
 //this function will tell us if char on this system is unsigned char or signed char
@@ -36,6 +42,7 @@ uint32_t mask{uint32_t(255) << (nthbyte*8)};
 return uint8_t((mask&in) >> (nthbyte*8));
 }
 
+
 }//namespace rom
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -51,7 +58,7 @@ ret += " "+std::to_string(_d.size())+"bits";
 return ret;
 }
 
-std::vector<bool> conv_bool(uint32_t in) {
+std::vector<bool> conv_bool(uint32_t in) {	//convert uint32_t to vector<bool>
 std::vector<bool> ret{};
 for (int8_t i{31};i>=0;--i) {ret.push_back(rom::getbit(in,i));}
 return ret;
@@ -79,5 +86,11 @@ for (auto a:v) {os << std::hex << std::setw(2) << std::setfill('0') << uint32_t(
 return os;
 }
 
+template <size_t array_sz>
+std::string to_string(const  std::array<uint8_t,array_sz>& v) {
+std::stringstream os;
+for (auto a:v) {os << std::hex << std::setw(2) << std::setfill('0') << uint32_t(a);}
+return os.str();
+}
 
 #endif //tools_h

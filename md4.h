@@ -94,6 +94,7 @@ public:
 md4(void) {}
 
 std::array<u8,16> operator()(const std::string& in) {
+rom::assert_plain_char_is_unsigned();	//make sure char runs from 0 to 255
 std::vector<bool> tmp{};	//convert to std::vector<bool> and run calculation
 for (auto ch:in) {for (int8_t bit{7};bit>=0;--bit) {tmp.push_back(getbit(u8(ch),bit));}}
 return this->operator()(tmp);

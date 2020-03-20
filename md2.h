@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <array>
+#include "tools.h"
 
 namespace rom {
 
@@ -39,6 +40,7 @@ public:
 md2(void):mdctx{} {}
 
 std::array<uint8_t,16> operator()(const std::string& strin) {
+rom::assert_plain_char_is_unsigned();   //make sure char runs from 0 to 255
 mdctx = MDCTX{};	//reinitialize mdctx to initial state
 for (auto ch:strin) {MDUPDATE(ch);}
 MDFINAL();
